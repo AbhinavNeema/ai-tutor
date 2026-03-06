@@ -4,7 +4,6 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import ChatPage from "./pages/ChatPage";
 import LoginPage from "./pages/LoginPage";
 
-// helper component to protect routes
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem("token");
 
@@ -17,30 +16,25 @@ function ProtectedRoute({ children }) {
 
 function App() {
 
-  // ⭐ Handle token from external redirect (SSO)
+  const token = localStorage.getItem("token");
+
+  // AUTO LOGIN FROM TOKEN PARAM
   useEffect(() => {
 
     const params = new URLSearchParams(window.location.search);
-    const token = params.get("token");
+    const urlToken = params.get("token");
 
-    if (token) {
-
-      localStorage.setItem("token", token);
-
-      // remove token from URL and redirect
+    if (urlToken) {
+      localStorage.setItem("token", urlToken);
       window.location.replace("/chat");
-
     }
 
   }, []);
-
-  const token = localStorage.getItem("token");
 
   return (
     <BrowserRouter>
       <Routes>
 
-        {/* login */}
         <Route
           path="/login"
           element={
@@ -50,7 +44,6 @@ function App() {
           }
         />
 
-        {/* chat list */}
         <Route
           path="/chat"
           element={
@@ -60,7 +53,6 @@ function App() {
           }
         />
 
-        {/* specific chat */}
         <Route
           path="/chat/:chatId"
           element={
@@ -70,13 +62,11 @@ function App() {
           }
         />
 
-        {/* default redirect */}
         <Route
           path="/"
           element={<Navigate to={token ? "/chat" : "/login"} replace />}
         />
 
-        {/* fallback */}
         <Route
           path="*"
           element={<Navigate to={token ? "/chat" : "/login"} replace />}
