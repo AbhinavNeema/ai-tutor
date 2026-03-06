@@ -107,7 +107,7 @@ export async function ssoLogin(req,res){
   // verify LMS token
   const decoded = jwt.verify(lmsToken, process.env.JWT_SECRET);
 
-  const userId = decoded.userId;
+  const userId = decoded.id;
 
   if(!userId){
     return res.status(401).json({error:"Invalid LMS token"});
