@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 
 import ChatPage from "./pages/ChatPage";
 import LoginPage from "./pages/LoginPage";
@@ -14,25 +14,34 @@ function ProtectedRoute({ children }) {
   return children;
 }
 
-function App() {
+// 🔹 Handles token from URL
+function TokenHandler() {
+  const location = useLocation();
 
-  const token = localStorage.getItem("token");
-
-  // AUTO LOGIN FROM TOKEN PARAM
   useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const token = params.get("token");
 
-    const params = new URLSearchParams(window.location.search);
-    const urlToken = params.get("token");
+    if (token) {
+      localStorage.setItem("token", token);
 
-    if (urlToken) {
-      localStorage.setItem("token", urlToken);
+      // remove token from URL
       window.location.replace("/chat");
     }
+  }, [location]);
 
-  }, []);
+  return null;
+}
+
+function App() {
+  const token = localStorage.getItem("token");
 
   return (
     <BrowserRouter>
+
+      {/* Token capture runs first */}
+      <TokenHandler />
+
       <Routes>
 
         <Route
