@@ -96,59 +96,75 @@ export async function ssoLogin(req,res){
 
  try{
 
+  console.log("🔹 SSO request received");
+
   const authHeader = req.headers.authorization;
 
+  console.log("🔹 Authorization header:", authHeader);
+
   if(!authHeader){
-    return res.status(401).json({error:"Token missing"});
+   console.log("❌ No Authorization header");
+   return res.status(401).json({error:"Token missing"});
   }
 
   const lmsToken = authHeader.split(" ")[1];
 
-  // verify LMS token
+  console.log("🔹 LMS token:", lmsToken);
+
+  // decode without verifying
+  const decodedUnsafe = jwt.decode(lmsToken);
+  console.log("🔹 Decoded token (no verify):", decodedUnsafe);
+
+  console.log("🔹 Using JWT_SECRET:", process.env.JWT_SECRET);
+
+  // verify token
   const decoded = jwt.verify(lmsToken, process.env.JWT_SECRET);
+
+  console.log("✅ Token verified:", decoded);
 
   const userId = decoded.id;
 
+  console.log("🔹 UserId from token:", userId);
+
   if(!userId){
-    return res.status(401).json({error:"Invalid LMS token"});
+   console.log("❌ userId missing in token");
+   return res.status(401).json({error:"Invalid LMS token"});
   }
 
-  // find user in AI Tutor DB
   let user = await User.findById(userId);
+
+  console.log("🔹 User from DB:", user);
 
   if(!user){
 
-    // optional: create minimal user
-    user = await User.create({
-      name:"SSO User",
-      email:`${userId}@sso.local`,
-      password:"sso-user"
-    });
+   console.log("⚠️ User not found, creating SSO user");
+
+   user = await User.create({
+    name:"SSO User",
+    email:`${userId}@sso.local`,
+    password:"sso-user"
+   });
+
+   console.log("✅ SSO user created:", user._id);
 
   }
 
-  // generate AI tutor token
   const token = jwt.sign(
-    {id:user._id},
-    process.env.JWT_SECRET,
-    {expiresIn:"7d"}
+   {id:user._id},
+   process.env.JWT_SECRET,
+   {expiresIn:"7d"}
   );
 
-  res.json({
-    token,
-    user:{
-      _id:user._id,
-      name:user.name,
-      email:user.email
-    }
-  });
+  console.log("✅ AI Tutor token generated:", token);
+
+  res.json({token});
 
  }catch(err){
 
-  console.error("SSO ERROR:",err);
+  console.log("❌ SSO ERROR:",err);
 
   res.status(401).json({
-    error:"Invalid LMS token"
+   error:"Invalid LMS token"
   });
 
  }
