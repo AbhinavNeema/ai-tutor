@@ -25,17 +25,64 @@ function TokenHandler() {
   useEffect(() => {
 
     const params = new URLSearchParams(location.search);
-    const token = params.get("token");
+    const lmsToken = params.get("token");
 
-    if (token) {
+    console.log("🔹 URL params:", location.search);
+    console.log("🔹 LMS Token received:", lmsToken);
 
-      // store token
-      localStorage.setItem("token", token);
+    if (!lmsToken) {
+      console.log("❌ No LMS token found");
+      return;
+    }
 
-      // remove token from URL
-      window.location.replace("/chat");
+    async function exchangeToken() {
+
+      try {
+
+        console.log("🚀 Sending LMS token to backend...");
+
+        const res = await fetch(
+          "https://ai-tutor-1bp0.onrender.com/api/sso/sso-login",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${lmsToken}`
+            }
+          }
+        );
+
+        console.log("🔹 Response status:", res.status);
+
+        const data = await res.json();
+
+        console.log("🔹 Backend response:", data);
+
+        if (data.token) {
+
+          console.log("✅ AI Tutor token received:", data.token);
+
+          localStorage.setItem("token", data.token);
+
+          console.log("💾 Token saved in localStorage");
+
+          window.location.replace("/chat");
+
+        } else {
+
+          console.log("❌ No token returned from backend");
+
+        }
+
+      } catch (err) {
+
+        console.error("❌ SSO error:", err);
+
+      }
 
     }
+
+    exchangeToken();
 
   }, [location]);
 
