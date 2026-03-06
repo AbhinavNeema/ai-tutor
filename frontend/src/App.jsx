@@ -42,7 +42,7 @@ function TokenHandler() {
         console.log("🚀 Sending LMS token to backend...");
 
         const res = await fetch(
-          "https://ai-tutor-1bp0.onrender.com/api/auth/sso",
+          "https://ai-tutor-1bp0.onrender.com/api/sso/sso",
           {
             method: "POST",
             headers: {

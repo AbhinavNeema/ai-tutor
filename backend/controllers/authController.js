@@ -96,10 +96,21 @@ export async function ssoLogin(req,res){
 
  try{
 
-  const {name,email} = req.body;
+  const authHeader = req.headers.authorization;
+
+  if(!authHeader){
+    return res.status(401).json({error:"Token missing"});
+  }
+
+  const lmsToken = authHeader.split(" ")[1];
+
+  const decoded = jwt.verify(lmsToken, process.env.JWT_SECRET);
+
+  const email = decoded.email;
+  const name = decoded.name || "SSO User";
 
   if(!email){
-   return res.status(400).json({error:"email required"});
+    return res.status(400).json({error:"Email missing in token"});
   }
 
   let user = await User.findOne({email});
@@ -107,9 +118,9 @@ export async function ssoLogin(req,res){
   if(!user){
 
     user = await User.create({
-      name: name || "SSO User",
+      name,
       email,
-      password: "sso-user"
+      password:"sso-user"
     });
 
   }
@@ -132,7 +143,7 @@ export async function ssoLogin(req,res){
  }catch(err){
 
   console.error("SSO ERROR:",err);
-  res.status(500).json({error:err.message});
+  res.status(401).json({error:"Invalid token"});
 
  }
 
