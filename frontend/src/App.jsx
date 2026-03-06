@@ -5,6 +5,7 @@ import ChatPage from "./pages/ChatPage";
 import LoginPage from "./pages/LoginPage";
 
 function ProtectedRoute({ children }) {
+
   const token = localStorage.getItem("token");
 
   if (!token) {
@@ -14,32 +15,76 @@ function ProtectedRoute({ children }) {
   return children;
 }
 
-// 🔹 Handles token from URL
+
+// 🔹 Handles LMS token → converts to AI Tutor token
 function TokenHandler() {
+
   const location = useLocation();
 
   useEffect(() => {
+
     const params = new URLSearchParams(location.search);
-    const token = params.get("token");
+    const lmsToken = params.get("token");
 
-    if (token) {
-      localStorage.setItem("token", token);
+    if (!lmsToken) return;
 
-      // remove token from URL
-      window.location.replace("/chat");
+    async function exchangeToken() {
+
+      try {
+
+        const res = await fetch(
+          "https://ai-tutor-1bp0.onrender.com/api/sso/sso-login",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${lmsToken}`
+            }
+          }
+        );
+
+        const data = await res.json();
+
+        if (data.token) {
+
+          // store AI tutor token
+          localStorage.setItem("token", data.token);
+
+          // clean URL
+          window.location.replace("/chat");
+
+        } else {
+
+          console.error("SSO login failed", data);
+
+        }
+
+      } catch (err) {
+
+        console.error("SSO error", err);
+
+      }
+
     }
+
+    exchangeToken();
+
   }, [location]);
 
   return null;
+
 }
 
+
 function App() {
+
   const token = localStorage.getItem("token");
 
   return (
+
     <BrowserRouter>
 
-      {/* Token capture runs first */}
+      {/* capture token from URL */}
       <TokenHandler />
 
       <Routes>
@@ -82,8 +127,11 @@ function App() {
         />
 
       </Routes>
+
     </BrowserRouter>
+
   );
+
 }
 
 export default App;

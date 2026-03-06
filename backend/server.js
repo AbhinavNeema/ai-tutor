@@ -11,7 +11,7 @@ import chatRoutes from "./routes/chatRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import courseRoutes from "./routes/courseRoutes.js"
 import examRoutes from "./routes/examRoutes.js";
-
+import ssoRoutes from "./routes/ssoRoutes.js";
 
 if (!process.env.GROQ_API_KEY) {
   console.error("❌ GROQ_API_KEY missing in .env");
@@ -40,6 +40,7 @@ app.use("/api/chat", chatRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/courses", courseRoutes);
 app.use("/api/exam", examRoutes);
+app.use("/api/sso",ssoRoutes);
 const PORT = process.env.PORT || 5000;
 
 async function start() {
