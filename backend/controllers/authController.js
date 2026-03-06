@@ -103,7 +103,6 @@ export async function ssoLogin(req,res){
   console.log("🔹 Authorization header:", authHeader);
 
   if(!authHeader){
-   console.log("❌ No Authorization header");
    return res.status(401).json({error:"Token missing"});
   }
 
@@ -111,41 +110,28 @@ export async function ssoLogin(req,res){
 
   console.log("🔹 LMS token:", lmsToken);
 
-  // decode without verifying
-  const decodedUnsafe = jwt.decode(lmsToken);
-  console.log("🔹 Decoded token (no verify):", decodedUnsafe);
+  const decoded = jwt.decode(lmsToken);
+  console.log("🔹 Decoded token:", decoded);
 
-  console.log("🔹 Using JWT_SECRET:", process.env.JWT_SECRET);
+  const verified = jwt.verify(lmsToken, process.env.JWT_SECRET);
 
-  // verify token
-  const decoded = jwt.verify(lmsToken, process.env.JWT_SECRET);
+  console.log("🔹 Verified token:", verified);
 
-  console.log("✅ Token verified:", decoded);
-
-  const userId = decoded.id;
-
-  console.log("🔹 UserId from token:", userId);
+  const userId = verified.userId || verified.id;
 
   if(!userId){
-   console.log("❌ userId missing in token");
    return res.status(401).json({error:"Invalid LMS token"});
   }
 
   let user = await User.findById(userId);
 
-  console.log("🔹 User from DB:", user);
-
   if(!user){
-
-   console.log("⚠️ User not found, creating SSO user");
 
    user = await User.create({
     name:"SSO User",
     email:`${userId}@sso.local`,
     password:"sso-user"
    });
-
-   console.log("✅ SSO user created:", user._id);
 
   }
 
@@ -155,7 +141,7 @@ export async function ssoLogin(req,res){
    {expiresIn:"7d"}
   );
 
-  console.log("✅ AI Tutor token generated:", token);
+  console.log("✅ AI Tutor token generated");
 
   res.json({token});
 
