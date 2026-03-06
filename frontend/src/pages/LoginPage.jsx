@@ -10,8 +10,8 @@ export default function LoginPage() {
   async function handleSubmit() {
     setLoading(true);
     const url = isRegister
-      ? "http://localhost:5001/api/auth/register"
-      : "http://localhost:5001/api/auth/login";
+      ? "https://ai-tutor-1bp0.onrender.com/register"
+      : "https://ai-tutor-1bp0.onrender.com/login";
 
     const body = isRegister
       ? { name, email, password }

@@ -271,7 +271,7 @@ export default function ChatPage() {
                       try {
 
                         const res = await fetch(
-                          "http://localhost:5001/api/exam/evaluate",
+                          "https://ai-tutor-1bp0.onrender.com/evaluate",
                           {
                             method: "POST",
                             headers: {
