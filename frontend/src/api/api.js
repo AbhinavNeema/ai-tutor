@@ -1,4 +1,4 @@
-const API = "http://localhost:5001";
+const API = "https://ai-tutor-1bp0.onrender.com";
 
 function authHeaders() {
   const token = localStorage.getItem("token");
