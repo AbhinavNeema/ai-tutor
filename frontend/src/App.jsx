@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import ChatPage from "./pages/ChatPage";
@@ -16,6 +16,23 @@ function ProtectedRoute({ children }) {
 }
 
 function App() {
+
+  // ⭐ Handle token from external redirect (SSO)
+  useEffect(() => {
+
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+
+    if (token) {
+
+      localStorage.setItem("token", token);
+
+      // remove token from URL and redirect
+      window.location.replace("/chat");
+
+    }
+
+  }, []);
 
   const token = localStorage.getItem("token");
 
