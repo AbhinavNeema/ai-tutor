@@ -96,7 +96,7 @@ export async function ssoLogin(req,res){
 
  try{
 
-  const {email,name} = req.body;
+  const {name,email} = req.body;
 
   if(!email){
    return res.status(400).json({error:"email required"});
@@ -131,6 +131,7 @@ export async function ssoLogin(req,res){
 
  }catch(err){
 
+  console.error("SSO ERROR:",err);
   res.status(500).json({error:err.message});
 
  }
