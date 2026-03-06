@@ -9,9 +9,11 @@ export default function LoginPage() {
 
   async function handleSubmit() {
     setLoading(true);
+    const API = "https://ai-tutor-1bp0.onrender.com/api/auth";
+
     const url = isRegister
-      ? "https://ai-tutor-1bp0.onrender.com/register"
-      : "https://ai-tutor-1bp0.onrender.com/login";
+      ? `${API}/register`
+      : `${API}/login`;
 
     const body = isRegister
       ? { name, email, password }
