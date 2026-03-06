@@ -104,27 +104,30 @@ export async function ssoLogin(req,res){
 
   const lmsToken = authHeader.split(" ")[1];
 
+  // verify LMS token
   const decoded = jwt.verify(lmsToken, process.env.JWT_SECRET);
 
-  const email = decoded.email;
-  const name = decoded.name || "SSO User";
+  const userId = decoded.userId;
 
-  if(!email){
-    return res.status(400).json({error:"Email missing in token"});
+  if(!userId){
+    return res.status(401).json({error:"Invalid LMS token"});
   }
 
-  let user = await User.findOne({email});
+  // find user in AI Tutor DB
+  let user = await User.findById(userId);
 
   if(!user){
 
+    // optional: create minimal user
     user = await User.create({
-      name,
-      email,
+      name:"SSO User",
+      email:`${userId}@sso.local`,
       password:"sso-user"
     });
 
   }
 
+  // generate AI tutor token
   const token = jwt.sign(
     {id:user._id},
     process.env.JWT_SECRET,
@@ -143,7 +146,10 @@ export async function ssoLogin(req,res){
  }catch(err){
 
   console.error("SSO ERROR:",err);
-  res.status(401).json({error:"Invalid token"});
+
+  res.status(401).json({
+    error:"Invalid LMS token"
+  });
 
  }
 
