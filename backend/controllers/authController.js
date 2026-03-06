@@ -96,12 +96,10 @@ export async function ssoLogin(req,res){
 
  try{
 
-  const {name,email} = req.body;
+  const {email,name} = req.body;
 
   if(!email){
-    return res.status(400).json({
-      error:"email required"
-    });
+   return res.status(400).json({error:"email required"});
   }
 
   let user = await User.findOne({email});
@@ -109,9 +107,9 @@ export async function ssoLogin(req,res){
   if(!user){
 
     user = await User.create({
-      name: name || "User",
+      name: name || "SSO User",
       email,
-      password:"sso_user"
+      password: "sso-user"
     });
 
   }
@@ -133,9 +131,7 @@ export async function ssoLogin(req,res){
 
  }catch(err){
 
-  res.status(500).json({
-    error:err.message
-  });
+  res.status(500).json({error:err.message});
 
  }
 
