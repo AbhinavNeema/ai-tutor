@@ -17,6 +17,7 @@ function ProtectedRoute({ children }) {
 
 
 // 🔹 Handles LMS token → converts to AI Tutor token
+// 🔹 Handles token from URL
 function TokenHandler() {
 
   const location = useLocation();
@@ -24,50 +25,17 @@ function TokenHandler() {
   useEffect(() => {
 
     const params = new URLSearchParams(location.search);
-    const lmsToken = params.get("token");
+    const token = params.get("token");
 
-    if (!lmsToken) return;
+    if (token) {
 
-    async function exchangeToken() {
+      // store token
+      localStorage.setItem("token", token);
 
-      try {
-
-        const res = await fetch(
-          "https://ai-tutor-1bp0.onrender.com/api/sso/sso-login",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${lmsToken}`
-            }
-          }
-        );
-
-        const data = await res.json();
-
-        if (data.token) {
-
-          // store AI tutor token
-          localStorage.setItem("token", data.token);
-
-          // clean URL
-          window.location.replace("/chat");
-
-        } else {
-
-          console.error("SSO login failed", data);
-
-        }
-
-      } catch (err) {
-
-        console.error("SSO error", err);
-
-      }
+      // remove token from URL
+      window.location.replace("/chat");
 
     }
-
-    exchangeToken();
 
   }, [location]);
 
