@@ -19,12 +19,35 @@ export async function callLLM(prompt) {
   const completion = await groq.send(
     new ConverseCommand({
       modelId: "meta.llama3-8b-instruct-v1:0",
+
+      system: [
+        {
+          text: `
+You must return ONLY valid JSON.
+Do not include markdown.
+
+JSON format must be exactly:
+
+{
+  "type": "text",
+  "content": [
+    {
+      "type": "paragraph",
+      "text": "your answer"
+    }
+  ]
+}
+`
+        }
+      ],
+
       messages: [
         {
           role: "user",
           content: [{ text: prompt }]
         }
       ],
+
       inferenceConfig: {
         temperature: 0.2
       }
@@ -33,7 +56,6 @@ export async function callLLM(prompt) {
 
   let text = completion.output?.message?.content?.[0]?.text || "";
 
-  // 🔹 Remove markdown wrappers from LLM
   text = text
     .replace(/```json/g, "")
     .replace(/```/g, "")
@@ -42,11 +64,18 @@ export async function callLLM(prompt) {
   try {
     return JSON.parse(text);
   } catch (err) {
-    console.error("LLM JSON parse failed:", text);
 
+    console.warn("LLM returned plain text, using fallback JSON");
+
+    // 🔹 Always return valid JSON fallback
     return {
       type: "text",
-      content: text
+      content: [
+        {
+          type: "paragraph",
+          text: text
+        }
+      ]
     };
   }
 }
