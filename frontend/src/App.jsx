@@ -20,6 +20,8 @@ function ProtectedRoute({ children }) {
 // 🔹 Handles token from URL
 function TokenHandler() {
 
+  const [loading, setLoading] = React.useState(false);
+
   const location = useLocation();
 
   useEffect(() => {
@@ -34,6 +36,8 @@ function TokenHandler() {
       console.log("❌ No LMS token found");
       return;
     }
+
+    setLoading(true);
 
     async function exchangeToken() {
 
@@ -71,7 +75,7 @@ function TokenHandler() {
         } else {
 
           console.log("❌ No token returned from backend");
-
+          setLoading(false);
         }
 
       } catch (err) {
@@ -85,6 +89,21 @@ function TokenHandler() {
     exchangeToken();
 
   }, [location]);
+
+  if (loading) {
+    return (
+      <div style={{
+        height: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: "18px",
+        fontWeight: "600"
+      }}>
+        🔐 Verifying LMS session...
+      </div>
+    );
+  }
 
   return null;
 
