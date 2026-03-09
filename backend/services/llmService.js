@@ -1,10 +1,13 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import Groq from "groq-sdk";
+import {
+  BedrockRuntimeClient,
+  ConverseCommand
+} from "@aws-sdk/client-bedrock-runtime";
 
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY
+const groq = new BedrockRuntimeClient({
+  region: process.env.AWS_REGION || "us-east-1"
 });
 
 export async function callLLM(prompt) {
@@ -13,18 +16,22 @@ export async function callLLM(prompt) {
     throw new Error("Prompt is empty");
   }
 
-  const completion = await groq.chat.completions.create({
-    model: "llama-3.3-70b-versatile",
-    messages: [
-      {
-        role: "user",
-        content: prompt
+  const completion = await groq.send(
+    new ConverseCommand({
+      modelId: "meta.llama3-8b-instruct-v1:0",
+      messages: [
+        {
+          role: "user",
+          content: [{ text: prompt }]
+        }
+      ],
+      inferenceConfig: {
+        temperature: 0.2
       }
-    ],
-    temperature: 0.2
-  });
+    })
+  );
 
-  let text = completion.choices?.[0]?.message?.content || "";
+  let text = completion.output?.message?.content?.[0]?.text || "";
 
   // 🔹 Remove markdown wrappers from LLM
   text = text
